@@ -38,7 +38,7 @@ const sessionConfig = {
   secret: 'thisshouldbeabettersecret',
   resave: false,
   saveUninitialized: true,
-  cookien: {
+  cookie: {
     httpOnly: true, // untuk ngeset biar client lain ngak bisa akseskodenya
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // ms*second*minute*day*week
     maxAge: 1000 * 60 * 60 * 24 * 7,
