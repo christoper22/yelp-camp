@@ -1,3 +1,8 @@
+const ExpressError = require('./utils/ExpressError');
+const { campgroundSchema, reviewSchema } = require('./schemas.js');
+const Campground = require('./models/campground');
+const review = require('./models/review');
+
 const isLoggedIn = async (req, res, next) => {
   if (!req.isAuthenticated()) {
     req.session.returnTo = await req.originalUrl;
@@ -8,4 +13,49 @@ const isLoggedIn = async (req, res, next) => {
   next();
 };
 
-module.exports = { isLoggedIn };
+const validateCampground = (req, res, next) => {
+  const { error } = campgroundSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(',');
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
+const isAuthor = async (req, res, next) => {
+  const { id } = req.params;
+  const campground = await Campground.findById(id);
+  if (!campground.author.equals(req.user_id)) {
+    req.flash('error', ' you dont have permission todo that');
+    return res.redirect(`/campgrounds/${id}`);
+  }
+  next();
+};
+
+const validateReview = (req, res, next) => {
+  const { error } = reviewSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(',');
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
+const isReviewAuthor = async (req, res, next) => {
+  const { id, reviewId } = req.params;
+  const review = await review.findById(reviewId);
+  if (!review.author.equals(req.user_id)) {
+    req.flash('error', ' you dont have permission todo that');
+    return res.redirect(`/campgrounds/${id}`);
+  }
+  next();
+};
+module.exports = {
+  isLoggedIn,
+  validateCampground,
+  isAuthor,
+  validateReview,
+  isReviewAuthor,
+};
