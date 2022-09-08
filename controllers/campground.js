@@ -1,3 +1,4 @@
+const { cloudinary } = require('../cloudinary');
 const Campground = require('../models/campground');
 
 module.exports.index = async (req, res, next) => {
@@ -17,7 +18,7 @@ module.exports.createCampground = async (req, res, next) => {
   }));
   campground.author = req.user._id;
   await campground.save();
-  console.log('campground');
+  // console.log('campground', campground);
   req.flash('success', 'succesfully made a new campground');
   res.redirect(`/campgrounds/${campground._id}`);
 };
@@ -26,7 +27,7 @@ module.exports.showCampground = async (req, res, next) => {
   const campground = await Campground.findById(req.params.id)
     .populate({ path: 'reviews', populate: { path: 'author' } })
     .populate('author');
-  console.log(campground);
+  // console.log(campground);
   if (!campground) {
     req.flash('error', 'cannot find that campground');
     return res.redirect('/campgrounds');
@@ -38,7 +39,7 @@ module.exports.showCampground = async (req, res, next) => {
 module.exports.renderEditForm = async (req, res, next) => {
   const { id } = req.params;
   const campground = await Campground.findById(id);
-  console.log(campground);
+  // console.log(campground);
   if (!campground) {
     req.flash('error', 'cannot find that campground');
     return res.redirect('/campgrounds');
@@ -48,7 +49,7 @@ module.exports.renderEditForm = async (req, res, next) => {
 
 module.exports.updateCampground = async (req, res, next) => {
   const { id } = req.params;
-
+  // console.log('update', req.body);
   const campground = await Campground.findByIdAndUpdate(id, {
     ...req.body.campground,
   });
@@ -58,6 +59,18 @@ module.exports.updateCampground = async (req, res, next) => {
   }));
   campground.images.push(...imgs);
   await campground.save();
+  // console.log('deleteImages', req.body.deleteImages);
+  if (req.body.deleteImages) {
+    for (let filename of req.body.deleteImages) {
+      await cloudinary.uploader.destroy(filename);
+    }
+    await campground.updateOne({
+      $pull: {
+        images: { filename: { $in: req.body.deleteImages } },
+      },
+    });
+  }
+  // console.log('update', campground);
   req.flash('success', 'succesfully update campground');
   res.redirect(`/campgrounds/${campground._id}`);
 };

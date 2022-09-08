@@ -14,6 +14,7 @@ const isLoggedIn = async (req, res, next) => {
 };
 
 const validateCampground = (req, res, next) => {
+  // console.log(req.body);
   const { error } = campgroundSchema.validate(req.body);
   if (error) {
     const msg = error.details.map((el) => el.message).join(',');
@@ -26,7 +27,7 @@ const validateCampground = (req, res, next) => {
 const isAuthor = async (req, res, next) => {
   const { id } = req.params;
   const campground = await Campground.findById(id);
-  console.log('user', req.user_id);
+  // console.log('user', req.user_id);
   if (!campground.author.equals(req.user._id)) {
     req.flash('error', ' you dont have permission todo that');
     return res.redirect(`/campgrounds/${id}`);

@@ -38,13 +38,6 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="image">add images</label>
-        <input type="file" name="image" id="image" multiple />
-        <div class="valid-feedback">looks good!!</div>
-        <div class="invalid-feedback">insert the image</div>
-      </div>
-
-      <div class="mb-3">
         <label class="form-label" for="price">Campground Price</label>
         <div class="input-group">
           <span class="input-group-text" id="price-label">$</span>
@@ -60,6 +53,7 @@
             required
           />
           <div class="valid-feedback">looks good!!</div>
+
           <div class="invalid-feedback">insert the price</div>
         </div>
       </div>
@@ -73,12 +67,36 @@
           id="description"
           required
         >
-<%= campground.description%> </textarea
+      <%= campground.description%> </textarea
         >
         <div class="valid-feedback">looks good!!</div>
         <div class="invalid-feedback">insert the description</div>
       </div>
 
+      <div class="mb-3">
+        <div class="input-group mb-3">
+          <input
+            type="file"
+            class="form-control"
+            id="image"
+            name="campground[image]"
+            multiple
+          />
+          <label class="input-group-text" for="image">Upload</label>
+        </div>
+      </div>
+      <% campground.images.forEach(function(img,i){ %>
+      <img src="<%= img.thumbnail %> " class="img-thumbnail" alt="" />
+      <div class="form-check form-check-inline">
+        <input
+          type="checkbox"
+          name="deleteImages[]"
+          id="image-<%=i %> "
+          value="<%=img.filename%>"
+        />
+        <label for="image-<%=i %>"> delete? </label>
+      </div>
+      <% }) %>
       <div class="mb-3">
         <button class="btn btn-info">update campground</button>
       </div>
