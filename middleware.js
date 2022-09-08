@@ -26,7 +26,8 @@ const validateCampground = (req, res, next) => {
 const isAuthor = async (req, res, next) => {
   const { id } = req.params;
   const campground = await Campground.findById(id);
-  if (!campground.author.equals(req.user_id)) {
+  console.log('user', req.user_id);
+  if (!campground.author.equals(req.user._id)) {
     req.flash('error', ' you dont have permission todo that');
     return res.redirect(`/campgrounds/${id}`);
   }
@@ -45,8 +46,8 @@ const validateReview = (req, res, next) => {
 
 const isReviewAuthor = async (req, res, next) => {
   const { id, reviewId } = req.params;
-  const review = await review.findById(reviewId);
-  if (!review.author.equals(req.user_id)) {
+  const reviews = await review.findById(reviewId);
+  if (!reviews.author.equals(req.user._id)) {
     req.flash('error', ' you dont have permission todo that');
     return res.redirect(`/campgrounds/${id}`);
   }
