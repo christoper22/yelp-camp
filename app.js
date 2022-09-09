@@ -11,7 +11,10 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const passport = require('passport');
 const localStrategy = require('passport-local');
-
+const mongooseSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const MongoDBStore = require('connect-mongo');
+const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/yelp-camp';
 // routes
 const campgroundRoutes = require('./routes/campground');
 const reviewRoutes = require('./routes/reviews');
@@ -25,7 +28,7 @@ const User = require('./models/user');
 
 // connection
 mongoose
-  .connect('mongodb://127.0.0.1:27017/yelp-camp', {
+  .connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -38,9 +41,18 @@ mongoose
   });
 
 const app = express();
-
+const store = MongoDBStore.create({
+  mongoUrl: dbUrl,
+  secret: 'thisshouldbeabettersecret',
+  touchAfter: 24 * 60 * 60,
+});
+store.on('error', function (e) {
+  console.log('session error', e);
+});
 // session setting
 const sessionConfig = {
+  store,
+  name: 'FSA',
   secret: 'thisshouldbeabettersecret',
   resave: false,
   saveUninitialized: true,
@@ -60,9 +72,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  mongooseSanitize({
+    replaceWith: '_',
+  })
+);
 
 app.use(session(sessionConfig));
 app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new localStrategy(User.authenticate()));
